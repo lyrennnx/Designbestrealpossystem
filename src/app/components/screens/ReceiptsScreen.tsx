@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search, X, RotateCcw, Receipt } from 'lucide-react';
+import { Search, X, RotateCcw, Receipt, Printer } from 'lucide-react';
 import { usePOS, php, Receipt as IReceipt, formatDateLabel } from '../../context/POSContext';
+import { printReceipt } from '../shared/PrintUtils';
 
 export function ReceiptsScreen() {
   const { receipts, selectedReceipt, setSelectedReceipt, openRefundModal, can } = usePOS();
@@ -123,6 +124,17 @@ function ReceiptDetail({ receipt, onClose, onRefund, canRefund }: {
               <RotateCcw size={13} /> REFUND
             </button>
           )}
+          <button onClick={() => printReceipt(receipt)}
+            style={{
+              padding: '7px 16px', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.35)',
+              borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+          >
+            <Printer size={13} /> PRINT
+          </button>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: 4, display: 'flex' }}>
             <X size={20} />
           </button>

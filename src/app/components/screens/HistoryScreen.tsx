@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Search, DollarSign, Receipt, RotateCcw, Package, TrendingUp } from 'lucide-react';
+import { Search, DollarSign, Receipt, RotateCcw, Package, TrendingUp, Printer } from 'lucide-react';
 import { usePOS, php, formatDateLabel } from '../../context/POSContext';
+import { printSalesReport } from '../shared/PrintUtils';
 
 type FilterType = 'all' | 'sale' | 'refund' | 'stock';
 
@@ -12,6 +13,19 @@ export function HistoryScreen() {
   const salesReceipts = receipts.filter(r => !r.refundOf);
   const refundReceipts = receipts.filter(r => !!r.refundOf);
   const totalSales = salesReceipts.reduce((s, r) => s + r.total, 0);
+  const refundTotal = refundReceipts.reduce((s, r) => s + r.total, 0);
+  const netSales = totalSales - refundTotal;
+
+  const handlePrintReport = () => {
+    printSalesReport({
+      totalSales,
+      transactionCount: salesReceipts.length,
+      refundCount: refundReceipts.length,
+      refundTotal,
+      netSales,
+      receipts,
+    });
+  };
 
   // Unified timeline entries
   const allEntries = useMemo(() => {
@@ -114,6 +128,19 @@ export function HistoryScreen() {
             {f === 'all' ? 'All' : f === 'sale' ? '💰 Sales' : f === 'refund' ? '↩ Refunds' : '📦 Stock'}
           </button>
         ))}
+        <button onClick={handlePrintReport}
+          style={{
+            padding: '7px 16px', borderRadius: 8, border: '1.5px solid #7c3aed',
+            background: '#7c3aed', color: 'white',
+            fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
+            transition: 'all 0.14s', flexShrink: 0,
+          }}
+          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = '#6d28d9'}
+          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = '#7c3aed'}
+        >
+          <Printer size={13} /> Print Report
+        </button>
       </div>
 
       {/* Timeline */}
