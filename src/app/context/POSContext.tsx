@@ -1,4 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+
+const SERVER_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-bb16b347`;
+const AUTH_HEADERS = {
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${publicAnonKey}`,
+};
 
 // ═══════════════════════════════════════════════════════════
 //  TYPES
@@ -252,35 +259,67 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
 
   // ── Persist / Load ─────────────────────────────────────────
+  const applyState = useCallback((s: any) => {
+    if (!s) return;
+    if (s.users) setUsers(s.users);
+    if (s.nextUserId) setNextUserId(s.nextUserId);
+    if (s.products) setProducts(s.products);
+    if (s.nextProductId) setNextProductId(s.nextProductId);
+    if (s.cart) setCart(s.cart);
+    if (s.receipts) setReceipts(s.receipts);
+    if (typeof s.receiptCounter === 'number') setReceiptCounter(s.receiptCounter);
+    if (s.inventory) setInventory(s.inventory);
+    if (s.invHistory) setInvHistory(s.invHistory);
+    if (s.invNextNum) setInvNextNum(s.invNextNum);
+  }, []);
+
   useEffect(() => {
+    let cancelled = false;
+    let usersForSession: POSUser[] = INITIAL_USERS;
+
+    // Seed instantly from local cache for offline/fast paint.
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const s = JSON.parse(raw);
-        if (s.users) setUsers(s.users);
-        if (s.nextUserId) setNextUserId(s.nextUserId);
-        if (s.products) setProducts(s.products);
-        if (s.nextProductId) setNextProductId(s.nextProductId);
-        if (s.cart) setCart(s.cart);
-        if (s.receipts) setReceipts(s.receipts);
-        if (typeof s.receiptCounter === 'number') setReceiptCounter(s.receiptCounter);
-        if (s.inventory) setInventory(s.inventory);
-        if (s.invHistory) setInvHistory(s.invHistory);
-        if (s.invNextNum) setInvNextNum(s.invNextNum);
+        applyState(s);
+        if (s.users) usersForSession = s.users;
       }
     } catch {}
-    // Restore session
-    try {
-      const sess = localStorage.getItem(SESSION_KEY);
-      if (sess) {
-        const { username, role } = JSON.parse(sess);
-        const raw2 = localStorage.getItem(STORAGE_KEY);
-        const usersData: POSUser[] = raw2 ? (JSON.parse(raw2).users || INITIAL_USERS) : INITIAL_USERS;
-        const u = usersData.find(x => x.username === username && x.role === role);
-        if (u) setCurrentUser(u);
+
+    // Fetch authoritative state from Supabase.
+    (async () => {
+      try {
+        const res = await fetch(`${SERVER_BASE}/state`, { headers: AUTH_HEADERS });
+        if (!res.ok) {
+          const text = await res.text();
+          console.log(`Failed to load POS state from server (status ${res.status}): ${text}`);
+          return;
+        }
+        const data = await res.json();
+        if (cancelled) return;
+        if (data?.state) {
+          applyState(data.state);
+          if (data.state.users) usersForSession = data.state.users;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data.state)); } catch {}
+        }
+      } catch (err) {
+        console.log(`Error loading POS state from server: ${err}`);
+      } finally {
+        // Restore session after we have the latest user list.
+        try {
+          const sess = localStorage.getItem(SESSION_KEY);
+          if (sess && !cancelled) {
+            const { username, role } = JSON.parse(sess);
+            const u = usersForSession.find(x => x.username === username && x.role === role);
+            if (u) setCurrentUser(u);
+          }
+        } catch {}
       }
-    } catch {}
-  }, []);
+    })();
+
+    return () => { cancelled = true; };
+  }, [applyState]);
 
   const saveState = useCallback((newState?: Partial<{
     users: POSUser[]; nextUserId: number; products: Product[]; nextProductId: number;
@@ -301,6 +340,19 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
         invNextNum: newState?.invNextNum ?? invNextNum,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      // Persist to Supabase (fire-and-forget; localStorage is the offline fallback).
+      fetch(`${SERVER_BASE}/state`, {
+        method: 'POST',
+        headers: AUTH_HEADERS,
+        body: JSON.stringify({ state }),
+      }).then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          console.log(`Failed to save POS state to server (status ${res.status}): ${text}`);
+        }
+      }).catch((err) => {
+        console.log(`Network error saving POS state to server: ${err}`);
+      });
     } catch {}
   }, [users, nextUserId, products, nextProductId, cart, receipts, receiptCounter, inventory, invHistory, invNextNum]);
 
