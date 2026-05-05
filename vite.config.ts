@@ -26,8 +26,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png'],
+      includeAssets: ['favicon.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
+        id: '/',
         name: 'Fragrance POS — 1470',
         short_name: '1470 POS',
         description: 'Point of Sale system for The1470 Fragrance Shop',
@@ -37,18 +38,26 @@ export default defineConfig({
         orientation: 'any',
         start_url: '/',
         scope: '/',
+        lang: 'en',
+        categories: ['business', 'productivity', 'finance'],
         icons: [
           {
-            src: '/favicon.png',
+            src: '/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any maskable',
+            purpose: 'any',
           },
           {
-            src: '/favicon.png',
+            src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable',
+            purpose: 'any',
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },
