@@ -87,12 +87,55 @@ export function printReceipt(receipt: Receipt) {
 </body>
 </html>`;
 
-  const win = window.open('', '_blank', 'width=400,height=600');
-  if (!win) return;
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => { win.print(); win.close(); }, 400);
+  printViaIframe(html, `Receipt ${receipt.id}`);
+}
+
+function printViaIframe(html: string, title: string) {
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentDocument || iframe.contentWindow?.document;
+  if (!doc) { document.body.removeChild(iframe); return; }
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  const cleanup = () => {
+    setTimeout(() => {
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    }, 500);
+  };
+
+  const trigger = () => {
+    try {
+      const w = iframe.contentWindow;
+      if (!w) { cleanup(); return; }
+      // Update parent title so the print header uses the receipt title
+      // instead of "about:blank".
+      const prevTitle = document.title;
+      document.title = title;
+      w.focus();
+      w.print();
+      document.title = prevTitle;
+    } catch (err) {
+      console.log(`Error printing via iframe: ${err}`);
+    }
+    cleanup();
+  };
+
+  // Wait for iframe content to be ready before printing.
+  if (iframe.contentWindow?.document.readyState === 'complete') {
+    setTimeout(trigger, 200);
+  } else {
+    iframe.onload = () => setTimeout(trigger, 200);
+  }
 }
 
 export interface SalesReportData {
@@ -280,10 +323,5 @@ export function printSalesReport(data: SalesReportData) {
 </body>
 </html>`;
 
-  const win = window.open('', '_blank', 'width=900,height=700');
-  if (!win) return;
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => { win.print(); }, 600);
+  printViaIframe(html, `Sales Report — ${data.dateRange || 'All Time'}`);
 }
