@@ -11,7 +11,7 @@ const AUTH_HEADERS = {
 //  TYPES
 // ═══════════════════════════════════════════════════════════
 export type UserRole = 'owner' | 'employee';
-export type Screen = 'sales' | 'receipts' | 'items' | 'inventory' | 'users' | 'history' | 'settings';
+export type Screen = 'sales' | 'receipts' | 'items' | 'inventory' | 'users' | 'settings';
 
 export interface POSUser {
   id: number; fullName: string; username: string; password: string; role: UserRole;

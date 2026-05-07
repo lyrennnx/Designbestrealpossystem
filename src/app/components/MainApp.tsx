@@ -7,7 +7,6 @@ import { ReceiptsScreen } from './screens/ReceiptsScreen';
 import { ItemsScreen } from './screens/ItemsScreen';
 import { InventoryScreen } from './screens/InventoryScreen';
 import { UsersScreen } from './screens/UsersScreen';
-import { HistoryScreen } from './screens/HistoryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { ChargeModal } from './modals/ChargeModal';
 import { RefundModal } from './modals/RefundModal';
@@ -25,7 +24,6 @@ const SCREENS: Record<string, React.ComponentType> = {
   items: ItemsScreen,
   inventory: InventoryScreen,
   users: UsersScreen,
-  history: HistoryScreen,
   settings: SettingsScreen,
 };
 
