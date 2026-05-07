@@ -17,7 +17,7 @@ app.use(
   }),
 );
 
-const STATE_KEY = "pos:state:v1";
+const STATE_KEY = "pos:state:v2";
 
 app.get("/make-server-bb16b347/health", (c) => {
   return c.json({ status: "ok" });

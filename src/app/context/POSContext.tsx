@@ -43,84 +43,13 @@ const PERMISSIONS: Record<UserRole, string[]> = {
 // ═══════════════════════════════════════════════════════════
 //  INITIAL DATA
 // ═══════════════════════════════════════════════════════════
-const INITIAL_USERS: POSUser[] = [
-  { id: 1, fullName: 'Store Owner', username: 'admin', password: 'owner123', role: 'owner' },
-  { id: 2, fullName: 'Staff Member', username: 'staff', password: 'emp123', role: 'employee' },
-];
+const INITIAL_USERS: POSUser[] = [];
 
-const INITIAL_PRODUCTS: Product[] = [
-  { id: 1, name: '212 VIP Black 85ML', price: 150, gender: 'male' },
-  { id: 2, name: 'Acqua Di Gio 85ML', price: 150, gender: 'male' },
-  { id: 3, name: 'Baccarat Rouge 540 85ML', price: 150, gender: 'female' },
-  { id: 4, name: 'Bombshell 85ML', price: 150, gender: 'female' },
-  { id: 5, name: 'Burberry Blush 85ML', price: 150, gender: 'female' },
-  { id: 6, name: 'Bvlgari Amethyste 85ML', price: 150, gender: 'female' },
-  { id: 7, name: 'Bvlgari Extreme 85ML', price: 150, gender: 'male' },
-  { id: 8, name: 'CK One 85ML', price: 150, gender: 'male' },
-  { id: 9, name: 'Cloud Ariana Grande 85ML', price: 150, gender: 'female' },
-  { id: 10, name: 'Cool Water 85ML', price: 150, gender: 'male' },
-  { id: 11, name: 'D&G Light Blue 85ML', price: 150, gender: 'male' },
-  { id: 12, name: "Eclat D'Aperge 85ML", price: 150, gender: 'female' },
-  { id: 13, name: 'Ferrari Black 85ML', price: 150, gender: 'male' },
-  { id: 14, name: 'French Riviera 85ML', price: 150, gender: 'female' },
-  { id: 15, name: 'Good Girl 85ML', price: 150, gender: 'female' },
-  { id: 16, name: 'Hugo Boss 85ML', price: 150, gender: 'male' },
-  { id: 17, name: 'Incanto Shine 85ML', price: 150, gender: 'female' },
-  { id: 18, name: 'Lacoste Black 85ML', price: 150, gender: 'male' },
-  { id: 19, name: 'Lacoste Red 85ML', price: 150, gender: 'male' },
-  { id: 20, name: 'Meow Katy Perry 85ML', price: 150, gender: 'female' },
-  { id: 21, name: 'Montblanc 85ML', price: 150, gender: 'male' },
-  { id: 22, name: 'Polo Blue 85ML', price: 150, gender: 'male' },
-  { id: 23, name: 'Polo Sport 85ML', price: 150, gender: 'male' },
-  { id: 24, name: 'Ralph Lauren 85ML', price: 150, gender: 'female' },
-  { id: 25, name: 'Sauvage Dior 85ML', price: 150, gender: 'male' },
-  { id: 26, name: 'Valaya 85ML', price: 150, gender: 'female' },
-  { id: 27, name: 'Miss Dior 85ML', price: 150, gender: 'female' },
-  { id: 28, name: 'Chanel No.5 85ML', price: 150, gender: 'female' },
-  { id: 29, name: 'Bleu de Chanel 85ML', price: 150, gender: 'male' },
-  { id: 30, name: 'Versace Eros 85ML', price: 150, gender: 'male' },
-];
+const INITIAL_PRODUCTS: Product[] = [];
 
-const INITIAL_RECEIPTS: Receipt[] = [
-  { id: '#1-0004', date: '2025-11-29', time: '7:00 PM', total: 150, items: [{ name: '[R] Valaya 85ML', qty: 1, price: 150 }], payment: 'Cash', pos: 'POS 1', refunded: false },
-  { id: '#1-0003', date: '2025-11-23', time: '5:46 AM', total: 150, items: [{ name: '[R] CK One 85ML', qty: 1, price: 150 }], payment: 'Cash', pos: 'POS 1', refunded: false },
-  { id: '#2-0001', date: '2025-11-17', time: '7:23 PM', total: 150, items: [{ name: '[R] Valaya 85ML', qty: 1, price: 150 }], payment: 'Cash', pos: 'POS 2', refunded: false },
-  { id: '#1-0002', date: '2025-11-15', time: '10:51 PM', total: 150, items: [{ name: '[R] Sauvage Dior 85ML', qty: 1, price: 150 }], payment: 'Cash', pos: 'POS 1', refundOf: '#1-0001' },
-  { id: '#1-0001', date: '2025-11-15', time: '10:50 PM', total: 150, items: [{ name: '[R] Sauvage Dior 85ML', qty: 1, price: 150 }], payment: 'Cash', pos: 'POS 1', refunded: true },
-];
+const INITIAL_RECEIPTS: Receipt[] = [];
 
-const INITIAL_INVENTORY: InventoryItem[] = [
-  { id: 'PRD-001', name: '212 VIP Black 85ML', category: 'Perfume', qty: 24, min: 5 },
-  { id: 'PRD-002', name: 'Acqua Di Gio 85ML', category: 'Cologne', qty: 7, min: 5 },
-  { id: 'PRD-003', name: 'Baccarat Rouge 540 85ML', category: 'Perfume', qty: 5, min: 5 },
-  { id: 'PRD-004', name: 'Bombshell 85ML', category: 'Perfume', qty: 0, min: 4 },
-  { id: 'PRD-005', name: 'Burberry Blush 85ML', category: 'Perfume', qty: 15, min: 6 },
-  { id: 'PRD-006', name: 'Bvlgari Amethyste 85ML', category: 'Cologne', qty: 3, min: 5 },
-  { id: 'PRD-007', name: 'Bvlgari Extreme 85ML', category: 'Cologne', qty: 20, min: 5 },
-  { id: 'PRD-008', name: 'CK One 85ML', category: 'Body Spray', qty: 8, min: 6 },
-  { id: 'PRD-009', name: 'Cloud Ariana Grande 85ML', category: 'Perfume', qty: 4, min: 4 },
-  { id: 'PRD-010', name: 'Cool Water 85ML', category: 'Cologne', qty: 0, min: 5 },
-  { id: 'PRD-011', name: 'D&G Light Blue 85ML', category: 'Cologne', qty: 12, min: 5 },
-  { id: 'PRD-012', name: "Eclat D'Aperge 85ML", category: 'Perfume', qty: 6, min: 5 },
-  { id: 'PRD-013', name: 'Ferrari Black 85ML', category: 'Cologne', qty: 30, min: 8 },
-  { id: 'PRD-014', name: 'French Riviera 85ML', category: 'Perfume', qty: 2, min: 4 },
-  { id: 'PRD-015', name: 'Good Girl 85ML', category: 'Perfume', qty: 10, min: 6 },
-  { id: 'PRD-016', name: 'Hugo Boss 85ML', category: 'Cologne', qty: 5, min: 5 },
-  { id: 'PRD-017', name: 'Incanto Shine 85ML', category: 'Perfume', qty: 0, min: 3 },
-  { id: 'PRD-018', name: 'Lacoste Black 85ML', category: 'Cologne', qty: 18, min: 6 },
-  { id: 'PRD-019', name: 'Lacoste Red 85ML', category: 'Cologne', qty: 7, min: 5 },
-  { id: 'PRD-020', name: 'Meow Katy Perry 85ML', category: 'Perfume', qty: 3, min: 3 },
-  { id: 'PRD-021', name: 'Montblanc 85ML', category: 'Cologne', qty: 22, min: 7 },
-  { id: 'PRD-022', name: 'Polo Blue 85ML', category: 'Cologne', qty: 9, min: 6 },
-  { id: 'PRD-023', name: 'Polo Sport 85ML', category: 'Body Spray', qty: 4, min: 5 },
-  { id: 'PRD-024', name: 'Ralph Lauren 85ML', category: 'Perfume', qty: 14, min: 6 },
-  { id: 'PRD-025', name: 'Sauvage Dior 85ML', category: 'Cologne', qty: 35, min: 10 },
-  { id: 'PRD-026', name: 'Valaya 85ML', category: 'Perfume', qty: 1, min: 4 },
-  { id: 'PRD-027', name: 'Miss Dior 85ML', category: 'Perfume', qty: 11, min: 5 },
-  { id: 'PRD-028', name: 'Chanel No.5 85ML', category: 'Perfume', qty: 6, min: 5 },
-  { id: 'PRD-029', name: 'Bleu de Chanel 85ML', category: 'Cologne', qty: 0, min: 4 },
-  { id: 'PRD-030', name: 'Versace Eros 85ML', category: 'Cologne', qty: 8, min: 7 },
-];
+const INITIAL_INVENTORY: InventoryItem[] = [];
 
 // ═══════════════════════════════════════════════════════════
 //  HELPERS
@@ -147,8 +76,8 @@ export function formatDateLabel(dateStr: string) {
 // ═══════════════════════════════════════════════════════════
 //  STORAGE
 // ═══════════════════════════════════════════════════════════
-const STORAGE_KEY = 'fragrance-pos-state-v2';
-const SESSION_KEY = 'fragrance-pos-session-v2';
+const STORAGE_KEY = 'fragrance-pos-state-v3';
+const SESSION_KEY = 'fragrance-pos-session-v3';
 
 // ═══════════════════════════════════════════════════════════
 //  CONTEXT TYPE
@@ -157,6 +86,8 @@ interface POSContextValue {
   // Auth
   currentUser: POSUser | null;
   login: (username: string, password: string, role: UserRole) => boolean;
+  signUp: (fullName: string, username: string, password: string, role: UserRole) => { ok: boolean; error?: string };
+  hasUsers: boolean;
   logout: () => void;
   can: (action: string) => boolean;
   // Navigation
@@ -385,6 +316,26 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(SESSION_KEY, JSON.stringify({ username: u.username, role: u.role }));
     return true;
   }, [users]);
+
+  const signUp = useCallback((fullName: string, username: string, password: string, role: UserRole): { ok: boolean; error?: string } => {
+    const trimmedName = fullName.trim();
+    const trimmedUser = username.trim();
+    if (!trimmedName || !trimmedUser || !password) {
+      return { ok: false, error: 'Please fill in all fields.' };
+    }
+    if (users.find(x => x.username === trimmedUser)) {
+      return { ok: false, error: 'Username already taken.' };
+    }
+    const newId = nextUserId;
+    const newUser: POSUser = { id: newId, fullName: trimmedName, username: trimmedUser, password, role };
+    const updated = [...users, newUser];
+    setUsers(updated);
+    setNextUserId(newId + 1);
+    setCurrentUser(newUser);
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ username: newUser.username, role: newUser.role }));
+    saveState({ users: updated, nextUserId: newId + 1 });
+    return { ok: true };
+  }, [users, nextUserId, saveState]);
 
   const logout = useCallback(() => {
     setCurrentUser(null);
@@ -628,7 +579,7 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
   const dismissAccessDenied = useCallback(() => setAccessDenied(false), []);
 
   const value: POSContextValue = {
-    currentUser, login, logout, can,
+    currentUser, login, signUp, hasUsers: users.length > 0, logout, can,
     currentScreen, setScreen,
     products, addProduct, updateProduct, deleteProduct,
     cart, addToCart, updateCartQty, clearCart, cartTotal,

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, ShoppingBag, Crown, User, Lock, LogIn } from 'lucide-react';
+import { Eye, EyeOff, ShoppingBag, User, Lock, LogIn, UserPlus, IdCard } from 'lucide-react';
 import { usePOS, UserRole } from '../context/POSContext';
 import { useIsPhone, useIsTablet } from './shared/useMediaQuery';
 
 export function LoginScreen() {
-  const { login } = usePOS();
+  const { login, signUp, hasUsers } = usePOS();
+  const [mode, setMode] = useState<'signin' | 'signup'>(hasUsers ? 'signin' : 'signup');
   const [role, setRole] = useState<UserRole>('owner');
+  const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -19,6 +21,20 @@ export function LoginScreen() {
   const isMobile = isPhone || isTablet;
 
   const handleLogin = () => {
+    if (mode === 'signup') {
+      if (!fullName || !username || !password) { setError('Please fill in all fields.'); return; }
+      if (password.length < 4) { setError('Password must be at least 4 characters.'); return; }
+      setLoading(true);
+      setError('');
+      setTimeout(() => {
+        const res = signUp(fullName, username, password, role);
+        if (!res.ok) {
+          setError(res.error ?? 'Could not create account.');
+          setLoading(false);
+        }
+      }, 550);
+      return;
+    }
     if (!username || !password) { setError('Please enter username and password.'); return; }
     setLoading(true);
     setError('');
@@ -29,6 +45,14 @@ export function LoginScreen() {
         setLoading(false);
       }
     }, 550);
+  };
+
+  const switchMode = (m: 'signin' | 'signup') => {
+    setMode(m);
+    setError('');
+    setFullName('');
+    setUsername('');
+    setPassword('');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -121,11 +145,11 @@ export function LoginScreen() {
           {/* Role selector */}
           <div style={{ marginBottom: 24 }}>
             <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
-              Sign in as
+              {mode === 'signup' ? 'Create account as' : 'Sign in as'}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {([['owner', '👑', 'Owner'], ['employee', '👤', 'Employee']] as [UserRole, string, string][]).map(([r, icon, label]) => (
-                <button key={r} onClick={() => { setRole(r); setError(''); setUsername(''); setPassword(''); }}
+                <button key={r} onClick={() => { setRole(r); setError(''); }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: isMobile ? '14px 16px' : '12px 16px',
@@ -147,8 +171,9 @@ export function LoginScreen() {
 
           {/* Form fields */}
           {[
-            { label: 'Username', id: 'user', icon: <User size={15} />, value: username, onChange: setUsername, type: 'text', placeholder: 'Enter username' },
-            { label: 'Password', id: 'pass', icon: <Lock size={15} />, value: password, onChange: setPassword, type: showPass ? 'text' : 'password', placeholder: 'Enter password' },
+            ...(mode === 'signup' ? [{ label: 'Full Name', id: 'name', icon: <IdCard size={15} />, value: fullName, onChange: setFullName, type: 'text', placeholder: 'Enter full name' }] : []),
+            { label: 'Username', id: 'user', icon: <User size={15} />, value: username, onChange: setUsername, type: 'text', placeholder: mode === 'signup' ? 'Choose a username' : 'Enter username' },
+            { label: 'Password', id: 'pass', icon: <Lock size={15} />, value: password, onChange: setPassword, type: showPass ? 'text' : 'password', placeholder: mode === 'signup' ? 'Choose a password' : 'Enter password' },
           ].map((field) => (
             <div key={field.id} style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>
@@ -213,30 +238,40 @@ export function LoginScreen() {
             }}
           >
             {loading ? (
-              <><div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', animation: 'spin 0.7s linear infinite' }} />Signing in…</>
+              <><div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', animation: 'spin 0.7s linear infinite' }} />{mode === 'signup' ? 'Creating account…' : 'Signing in…'}</>
+            ) : mode === 'signup' ? (
+              <><UserPlus size={16} />Create Account</>
             ) : (
               <><LogIn size={16} />Sign In</>
             )}
           </button>
 
-          {/* Demo credentials */}
+          {/* Mode toggle */}
           <div style={{
-            marginTop: 20, padding: 14,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10,
+            marginTop: 20, paddingTop: 16,
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            textAlign: 'center',
+            color: 'rgba(255,255,255,0.5)', fontSize: 13,
           }}>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>💡 Demo Credentials</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {[['Owner', 'admin', 'owner123'], ['Employee', 'staff', 'emp123']].map(([role, u, p]) => (
-                <div key={role} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-                  <span style={{ width: 60, color: 'rgba(255,255,255,0.3)' }}>{role}:</span>
-                  <code style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 4, color: '#a78bfa', fontFamily: 'JetBrains Mono, monospace' }}>{u}</code>
-                  <span style={{ color: 'rgba(255,255,255,0.2)' }}>/</span>
-                  <code style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 4, color: '#a78bfa', fontFamily: 'JetBrains Mono, monospace' }}>{p}</code>
-                </div>
-              ))}
-            </div>
+            {mode === 'signin' ? (
+              <>
+                Don't have an account?{' '}
+                <button type="button" onClick={() => switchMode('signup')}
+                  style={{ background: 'none', border: 'none', color: '#a78bfa', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, padding: 0 }}
+                >
+                  Create one
+                </button>
+              </>
+            ) : (
+              <>
+                {hasUsers ? 'Already have an account?' : 'Already registered?'}{' '}
+                <button type="button" onClick={() => switchMode('signin')}
+                  style={{ background: 'none', border: 'none', color: '#a78bfa', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, padding: 0 }}
+                >
+                  Sign in
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
