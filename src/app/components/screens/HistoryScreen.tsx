@@ -6,7 +6,7 @@ import { printSalesReport } from '../shared/PrintUtils';
 type FilterType = 'all' | 'sale' | 'refund' | 'stock';
 
 export function HistoryScreen() {
-  const { receipts, invHistory, clearHistory } = usePOS();
+  const { receipts, invHistory, clearHistory, currentUser } = usePOS();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
 
@@ -84,10 +84,12 @@ export function HistoryScreen() {
           style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', color: '#475569', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}>
           <Printer size={14} /> Print Report
         </button>
-        <button onClick={handleClear}
-          style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}>
-          <Trash2 size={14} /> Clear History
-        </button>
+        {currentUser?.role === 'owner' && (
+          <button onClick={handleClear}
+            style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}>
+            <Trash2 size={14} /> Clear History
+          </button>
+        )}
       </div>
 
       <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden' }}>
