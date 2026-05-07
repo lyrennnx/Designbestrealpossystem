@@ -20,9 +20,9 @@ export function ReceiptsScreen() {
   });
 
   return (
-    <div style={{ display: 'flex', height: '100%', fontFamily: "'Inter', sans-serif" }}>
+    <div data-screen="receipts" style={{ display: 'flex', height: '100%', fontFamily: "'Inter', sans-serif" }}>
       {/* LEFT: List */}
-      <div style={{ width: 320, flexShrink: 0, background: 'white', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+      <div data-pane="list" style={{ width: 320, flexShrink: 0, background: 'white', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid #f1f5f9' }}>
           <div style={{ position: 'relative' }}>
             <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
@@ -81,7 +81,7 @@ export function ReceiptsScreen() {
       </div>
 
       {/* RIGHT: Detail */}
-      <div style={{ flex: 1, background: '#f1f5f9', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div data-pane="detail" style={{ flex: 1, background: '#f1f5f9', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         {!selectedReceipt ? (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#94a3b8' }}>
             <Receipt size={60} style={{ opacity: 0.2 }} />

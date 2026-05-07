@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, ShoppingBag, Crown, User, Lock, LogIn } from 'lucide-react';
 import { usePOS, UserRole } from '../context/POSContext';
+import { useIsMobile } from './shared/useMediaQuery';
 
 export function LoginScreen() {
   const { login } = usePOS();
@@ -10,6 +11,7 @@ export function LoginScreen() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleLogin = () => {
     if (!username || !password) { setError('Please enter username and password.'); return; }
@@ -30,9 +32,14 @@ export function LoginScreen() {
 
   return (
     <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100dvh', height: '100dvh',
+      display: 'flex',
+      alignItems: isMobile ? 'stretch' : 'center',
+      justifyContent: 'center',
       background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-      fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden',
+      fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'auto',
+      padding: isMobile ? '0' : '20px',
+      WebkitTapHighlightColor: 'transparent',
     }}>
       {/* Animated background blobs */}
       {[
@@ -52,8 +59,12 @@ export function LoginScreen() {
 
       <div style={{
         position: 'relative', zIndex: 10,
-        width: '100%', maxWidth: 420,
-        margin: '0 16px',
+        width: '100%', maxWidth: isMobile ? '100%' : 420,
+        margin: isMobile ? 0 : '0 16px',
+        padding: isMobile ? '32px 20px 28px' : 0,
+        display: 'flex', flexDirection: 'column',
+        justifyContent: isMobile ? 'flex-start' : 'center',
+        gap: isMobile ? 18 : 0,
       }}>
         {/* Brand */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
@@ -90,8 +101,8 @@ export function LoginScreen() {
           background: 'rgba(255,255,255,0.04)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 20,
-          padding: 32,
+          borderRadius: isMobile ? 16 : 20,
+          padding: isMobile ? 22 : 32,
           boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
         }}>
           {/* Role selector */}
@@ -103,12 +114,14 @@ export function LoginScreen() {
               {([['owner', '👑', 'Owner'], ['employee', '👤', 'Employee']] as [UserRole, string, string][]).map(([r, icon, label]) => (
                 <button key={r} onClick={() => { setRole(r); setError(''); setUsername(''); setPassword(''); }}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px',
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: isMobile ? '14px 16px' : '12px 16px',
                     borderRadius: 12, border: `2px solid ${role === r ? '#7c3aed' : 'rgba(255,255,255,0.1)'}`,
                     background: role === r ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.04)',
                     cursor: 'pointer', transition: 'all 0.2s',
                     color: role === r ? 'white' : 'rgba(255,255,255,0.5)',
                     fontFamily: 'inherit',
+                    minHeight: 48,
                   }}
                 >
                   <span style={{ fontSize: 18 }}>{icon}</span>
@@ -140,11 +153,13 @@ export function LoginScreen() {
                   placeholder={field.placeholder}
                   autoComplete="off"
                   style={{
-                    width: '100%', padding: '12px 14px 12px 40px',
+                    width: '100%',
+                    padding: isMobile ? '15px 16px 15px 44px' : '12px 14px 12px 40px',
                     background: 'rgba(255,255,255,0.06)',
                     border: '1.5px solid rgba(255,255,255,0.12)',
-                    borderRadius: 10, color: 'white',
-                    fontSize: 14, fontFamily: 'inherit', outline: 'none',
+                    borderRadius: 12, color: 'white',
+                    fontSize: isMobile ? 16 : 14,
+                    fontFamily: 'inherit', outline: 'none',
                     boxSizing: 'border-box',
                     transition: 'border-color 0.2s',
                   }}
@@ -172,15 +187,16 @@ export function LoginScreen() {
           {/* Submit */}
           <button onClick={handleLogin} disabled={loading}
             style={{
-              width: '100%', padding: '14px',
+              width: '100%', padding: isMobile ? '16px' : '14px',
               background: loading ? 'rgba(124,58,237,0.5)' : 'linear-gradient(135deg, #7c3aed, #6d28d9)',
               color: 'white', border: 'none', borderRadius: 12,
-              fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
+              fontSize: isMobile ? 16 : 15, fontWeight: 700, fontFamily: 'inherit',
               cursor: loading ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               boxShadow: loading ? 'none' : '0 4px 20px rgba(124,58,237,0.4)',
               transition: 'all 0.2s',
               letterSpacing: 0.3,
+              minHeight: 52,
             }}
           >
             {loading ? (

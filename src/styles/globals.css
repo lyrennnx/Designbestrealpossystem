@@ -1,0 +1,84 @@
+/* ============================================================
+   RESPONSIVE OVERRIDES — mobile / tablet / iPad
+   The base inline styles assume a desktop layout; these rules
+   reflow the side-by-side screen layouts into single columns
+   below 1024px and tighten paddings for small touch screens.
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Allow iPad/iPhone safe-area insets for the standalone PWA. */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ---------- Tablet & smaller (≤1024px) ---------- */
+@media (max-width: 1024px) {
+  /* Sales screen on mobile: products fill the screen; cart becomes a
+     fixed bottom sheet rendered by the React component itself. */
+  [data-screen="sales"] [data-pane="products"] {
+    width: 100% !important;
+    flex: 1 !important;
+  }
+  /* Floating "View Cart" button reserves space inside the products grid */
+  [data-screen="sales"] [data-pane="products"] [data-product-grid-scroll] {
+    padding-bottom: 84px !important;
+  }
+
+  /* Receipts screen: stack list and detail */
+  [data-screen="receipts"] {
+    flex-direction: column !important;
+  }
+  [data-screen="receipts"] [data-pane="list"],
+  [data-screen="receipts"] [data-pane="detail"] {
+    width: 100% !important;
+    max-width: none !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Tighter screen padding */
+  [data-screen-root] {
+    padding: 10px !important;
+  }
+
+  /* Modals shrink to fit phone screens */
+  [data-modal-sheet] {
+    max-width: calc(100vw - 24px) !important;
+    width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 40px) !important;
+    overflow-y: auto !important;
+  }
+
+  /* Tables become horizontally scrollable instead of squishing */
+  [data-table-wrap] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* ---------- Mobile only (≤640px) ---------- */
+@media (max-width: 640px) {
+  /* Larger tap targets */
+  button { min-height: 36px; }
+
+  /* Inventory / users / items lists: card layout instead of dense rows */
+  [data-screen-root] {
+    padding: 8px !important;
+  }
+
+  /* Hide non-essential columns on tiny screens — opt-in via class */
+  .hide-on-mobile { display: none !important; }
+}
+
+/* Disable text selection on UI chrome for a more app-like feel */
+[data-no-select] {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}

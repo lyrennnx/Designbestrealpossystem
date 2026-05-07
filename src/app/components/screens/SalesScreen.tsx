@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Minus, Plus, Trash2, CreditCard, ShoppingCart } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Minus, Plus, Trash2, CreditCard, ShoppingCart, ChevronUp, X } from 'lucide-react';
 import { usePOS, php, Product } from '../../context/POSContext';
+import { useIsMobile } from '../shared/useMediaQuery';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -8,6 +9,9 @@ export function SalesScreen() {
   const { products, cart, addToCart, updateCartQty, clearCart, cartTotal, inventory, openChargeModal } = usePOS();
   const [search, setSearch] = useState('');
   const [gender, setGender] = useState<'all' | 'male' | 'female'>('all');
+  const isMobile = useIsMobile();
+  const [cartSheetOpen, setCartSheetOpen] = useState(false);
+  useEffect(() => { if (!isMobile) setCartSheetOpen(false); }, [isMobile]);
   const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => products.filter(p =>
@@ -22,10 +26,10 @@ export function SalesScreen() {
   const itemCount = cart.reduce((s, i) => s + i.qty, 0);
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: '#f1f5f9', fontFamily: "'Inter', sans-serif" }}>
+    <div data-screen="sales" style={{ display: 'flex', height: '100%', background: '#f1f5f9', fontFamily: "'Inter', sans-serif" }}>
 
       {/* LEFT: Products */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div data-pane="products" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         {/* Filter bar */}
         <div style={{ padding: '12px 16px', background: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           <div style={{ position: 'relative', flex: 1 }}>
@@ -63,10 +67,12 @@ export function SalesScreen() {
         </div>
 
         {/* Product grid */}
-        <div style={{
+        <div data-product-grid-scroll style={{
           flex: 1, overflow: 'auto',
           padding: '14px', display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+          gridTemplateColumns: isMobile
+            ? 'repeat(auto-fill, minmax(120px, 1fr))'
+            : 'repeat(auto-fill, minmax(140px, 1fr))',
           gap: 10, alignContent: 'start',
         }}>
           {pageItems.length === 0 ? (
@@ -102,12 +108,76 @@ export function SalesScreen() {
         )}
       </div>
 
-      {/* RIGHT: Order Panel */}
-      <div style={{
-        width: 300, flexShrink: 0, background: 'white',
-        borderLeft: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column',
-        boxShadow: '-2px 0 12px rgba(0,0,0,0.06)',
-      }}>
+      {/* Mobile: floating "View Cart" button */}
+      {isMobile && cart.length > 0 && !cartSheetOpen && (
+        <button
+          onClick={() => setCartSheetOpen(true)}
+          style={{
+            position: 'fixed', left: 12, right: 12, bottom: 12,
+            zIndex: 50, padding: '16px 18px', borderRadius: 14,
+            background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+            color: 'white', border: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            fontFamily: 'inherit', fontWeight: 700, fontSize: 15,
+            boxShadow: '0 10px 30px rgba(124,58,237,0.45)',
+            cursor: 'pointer', minHeight: 56,
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{
+              background: 'rgba(255,255,255,0.2)', borderRadius: 8,
+              padding: '4px 10px', fontSize: 13, fontWeight: 800,
+            }}>{itemCount}</span>
+            View Cart
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 16 }}>{php(total)}</span>
+            <ChevronUp size={18} />
+          </span>
+        </button>
+      )}
+
+      {/* Mobile sheet backdrop */}
+      {isMobile && cartSheetOpen && (
+        <div
+          onClick={() => setCartSheetOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 60, animation: 'fadeIn 0.18s ease-out' }}
+        />
+      )}
+
+      {/* RIGHT: Order Panel (desktop) / Bottom sheet (mobile) */}
+      <div data-pane="cart" style={
+        isMobile
+          ? {
+              position: 'fixed', left: 0, right: 0, bottom: 0,
+              maxHeight: '85dvh', height: 'auto',
+              background: 'white',
+              borderTopLeftRadius: 18, borderTopRightRadius: 18,
+              display: cartSheetOpen ? 'flex' : 'none',
+              flexDirection: 'column',
+              boxShadow: '0 -10px 40px rgba(0,0,0,0.3)',
+              zIndex: 70,
+              transform: cartSheetOpen ? 'translateY(0)' : 'translateY(100%)',
+              transition: 'transform 0.22s ease-out',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }
+          : {
+              width: 300, flexShrink: 0, background: 'white',
+              borderLeft: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column',
+              boxShadow: '-2px 0 12px rgba(0,0,0,0.06)',
+            }
+      }>
+        {isMobile && (
+          <div style={{
+            padding: '8px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            borderBottom: '1px solid #f1f5f9',
+          }}>
+            <div style={{ width: 40, height: 4, background: '#e2e8f0', borderRadius: 2, margin: '0 auto' }} />
+            <button onClick={() => setCartSheetOpen(false)}
+              style={{ position: 'absolute', right: 12, top: 10, padding: 6, background: '#f1f5f9', border: 'none', borderRadius: 8, cursor: 'pointer' }}
+            ><X size={16} color="#64748b" /></button>
+          </div>
+        )}
         {/* Header */}
         <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
