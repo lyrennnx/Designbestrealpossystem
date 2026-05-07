@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, ShoppingBag, Crown, User, Lock, LogIn } from 'lucide-react';
 import { usePOS, UserRole } from '../context/POSContext';
-import { useIsMobile } from './shared/useMediaQuery';
+import { useIsPhone, useIsTablet } from './shared/useMediaQuery';
 
 export function LoginScreen() {
   const { login } = usePOS();
@@ -11,7 +11,12 @@ export function LoginScreen() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const isMobile = useIsMobile();
+  const isPhone = useIsPhone();
+  const isTablet = useIsTablet();
+  // Anything <=1024 wants a touch-friendly layout, but the visual density
+  // is different between a phone (≤640px, tight, fills screen) and a
+  // tablet / iPad portrait (641–1024px, roomy centered card).
+  const isMobile = isPhone || isTablet;
 
   const handleLogin = () => {
     if (!username || !password) { setError('Please enter username and password.'); return; }
@@ -34,11 +39,12 @@ export function LoginScreen() {
     <div style={{
       minHeight: '100dvh', height: '100dvh',
       display: 'flex',
-      alignItems: isMobile ? 'stretch' : 'center',
+      // Phone fills the screen top-down. Tablet & desktop center the card.
+      alignItems: isPhone ? 'stretch' : 'center',
       justifyContent: 'center',
       background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
       fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'auto',
-      padding: isMobile ? '0' : '20px',
+      padding: isPhone ? '0' : '20px',
       WebkitTapHighlightColor: 'transparent',
     }}>
       {/* Animated background blobs */}
@@ -59,15 +65,19 @@ export function LoginScreen() {
 
       <div style={{
         position: 'relative', zIndex: 10,
-        width: '100%', maxWidth: isMobile ? '100%' : 420,
-        margin: isMobile ? 0 : '0 16px',
-        padding: isMobile ? '32px 20px 28px' : 0,
+        width: '100%',
+        // Phone: full width, fills screen.
+        // Tablet: 480px centered card with roomier padding.
+        // Desktop: existing 420px card.
+        maxWidth: isPhone ? '100%' : isTablet ? 480 : 420,
+        margin: isPhone ? 0 : '0 16px',
+        padding: isPhone ? '28px 18px 24px' : 0,
         display: 'flex', flexDirection: 'column',
-        justifyContent: isMobile ? 'flex-start' : 'center',
-        gap: isMobile ? 18 : 0,
+        justifyContent: isPhone ? 'flex-start' : 'center',
+        gap: isPhone ? 16 : 0,
       }}>
         {/* Brand */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <div style={{ textAlign: 'center', marginBottom: isPhone ? 16 : isTablet ? 24 : 32 }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 12,
             background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(10px)',
@@ -101,8 +111,11 @@ export function LoginScreen() {
           background: 'rgba(255,255,255,0.04)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: isMobile ? 16 : 20,
-          padding: isMobile ? 22 : 32,
+          borderRadius: isPhone ? 14 : 20,
+          // Phone: tight 18px padding so the form feels close to the edges.
+          // Tablet: roomy 28px so the card breathes on iPad portrait.
+          // Desktop: 32px.
+          padding: isPhone ? 18 : isTablet ? 28 : 32,
           boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
         }}>
           {/* Role selector */}
