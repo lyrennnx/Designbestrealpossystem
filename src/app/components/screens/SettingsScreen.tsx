@@ -64,13 +64,7 @@ export function SettingsScreen() {
               <span style={{ fontWeight: 700, color: '#1e293b' }}>{v}</span>
             </div>
           ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', fontSize: 13 }}>
-            <span style={{ color: '#64748b' }}>Demo Credentials</span>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: '#7c3aed' }}>admin / owner123</div>
-              <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: '#2563eb' }}>staff / emp123</div>
-            </div>
-          </div>
+
         </SettingsCard>
 
         {/* Sales Report - spans full width */}
