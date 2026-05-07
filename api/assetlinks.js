@@ -1,0 +1,15 @@
+export default function handler(req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).json([
+    {
+      relation: ["delegate_permission/common.handle_all_urls"],
+      target: {
+        namespace: "android_app",
+        package_name: "com.the1470.app",
+        sha256_cert_fingerprints: [
+          "A5:34:D0:4C:64:2B:A6:37:A7:FF:A5:2F:12:38:BF:78:64:69:D3:D5:D1:F2:FB:01:E3:1D:86:8B:74:71:12:C6"
+        ]
+      }
+    }
+  ]);
+}
