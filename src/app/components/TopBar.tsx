@@ -9,6 +9,7 @@ const SCREEN_TITLES: Record<string, string> = {
   items: 'Products',
   inventory: 'Inventory',
   users: 'User Management',
+  history: 'History & Analytics',
   settings: 'Settings',
 };
 

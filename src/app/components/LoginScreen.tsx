@@ -5,7 +5,7 @@ import { useIsPhone, useIsTablet } from './shared/useMediaQuery';
 
 export function LoginScreen() {
   const { login, signUp, hasUsers } = usePOS();
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup'>(hasUsers ? 'signin' : 'signup');
   const [role, setRole] = useState<UserRole>('owner');
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');

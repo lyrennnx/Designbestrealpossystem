@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShoppingCart, Receipt, Package, Boxes, Users, Settings, ShoppingBag, LogOut } from 'lucide-react';
+import { ShoppingCart, Receipt, Package, Boxes, Users, BarChart3, Settings, ShoppingBag, LogOut } from 'lucide-react';
 import { usePOS, Screen } from '../context/POSContext';
 
 const NAV_ITEMS: { screen: Screen; icon: React.ReactNode; label: string; ownerOnly?: boolean }[] = [
@@ -8,6 +8,7 @@ const NAV_ITEMS: { screen: Screen; icon: React.ReactNode; label: string; ownerOn
   { screen: 'items',     icon: <Package size={20} />,       label: 'Items',    ownerOnly: true },
   { screen: 'inventory', icon: <Boxes size={20} />,         label: 'Inventory' },
   { screen: 'users',     icon: <Users size={20} />,         label: 'Users',    ownerOnly: true },
+  { screen: 'history',   icon: <BarChart3 size={20} />,     label: 'History' },
   { screen: 'settings',  icon: <Settings size={20} />,      label: 'Settings', ownerOnly: true },
 ];
 

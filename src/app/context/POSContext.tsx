@@ -11,7 +11,7 @@ const AUTH_HEADERS = {
 //  TYPES
 // ═══════════════════════════════════════════════════════════
 export type UserRole = 'owner' | 'employee';
-export type Screen = 'sales' | 'receipts' | 'items' | 'inventory' | 'users' | 'settings';
+export type Screen = 'sales' | 'receipts' | 'items' | 'inventory' | 'users' | 'history' | 'settings';
 
 export interface POSUser {
   id: number; fullName: string; username: string; password: string; role: UserRole;
@@ -109,6 +109,7 @@ interface POSContextValue {
   receiptCounter: number;
   checkout: (payment: string) => void;
   refundReceipt: (receiptId: string) => void;
+  clearHistory: () => void;
   // Inventory
   inventory: InventoryItem[];
   invHistory: InvHistoryEntry[];
@@ -486,6 +487,15 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
     showToast('↩ Refund processed.');
   }, [receipts, receiptCounter, inventory, invHistory, saveState, showToast]);
 
+  // ── Clear History ──────────────────────────────────────────
+  const clearHistory = useCallback(() => {
+    setReceipts([]);
+    setInvHistory([]);
+    setReceiptCounter(1);
+    saveState({ receipts: [], invHistory: [], receiptCounter: 1 });
+    showToast('History cleared.');
+  }, [saveState, showToast]);
+
   // ── Inventory ──────────────────────────────────────────────
   const addInventoryItem = useCallback((item: InventoryItem) => {
     const exists = inventory.find(i => i.id === item.id);
@@ -583,7 +593,7 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
     currentScreen, setScreen,
     products, addProduct, updateProduct, deleteProduct,
     cart, addToCart, updateCartQty, clearCart, cartTotal,
-    receipts, receiptCounter, checkout, refundReceipt,
+    receipts, receiptCounter, checkout, refundReceipt, clearHistory,
     inventory, invHistory, invNextNum, addInventoryItem, updateInventoryItem, deleteInventoryItem, adjustStock,
     users, addUser, updateUser, deleteUser,
     toastMsg, showToast,
