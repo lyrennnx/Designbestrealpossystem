@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Search, Plus, SlidersHorizontal, Edit2, Boxes, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { usePOS, invStatus, InventoryItem } from '../../context/POSContext';
 
@@ -9,11 +9,37 @@ const STATUS_STYLES: Record<string, { bg: string; color: string; border: string 
   'Out of Stock': { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
 };
 
+/* ── swipe carousel styles (injected once) ── */
+const swipeStyleId = 'inv-swipe-styles';
+if (typeof document !== 'undefined' && !document.getElementById(swipeStyleId)) {
+  const style = document.createElement('style');
+  style.id = swipeStyleId;
+  style.textContent = `
+    @media (max-width: 480px) and (orientation: portrait) {
+      .inv-summary-row { overflow: hidden !important; padding: 12px 0 6px !important; gap: 0 !important; }
+      .inv-summary-track { display: flex; transition: transform 0.32s cubic-bezier(.4,0,.2,1); will-change: transform; }
+      .inv-summary-track > .inv-summary-card { min-width: 100%; box-sizing: border-box; flex-shrink: 0; margin: 0; padding: 16px 18px !important; }
+      .inv-summary-dots { display: flex !important; }
+    }
+    @media (min-width: 481px), (orientation: landscape) {
+      .inv-summary-track { display: flex; gap: 10px; }
+      .inv-summary-track > .inv-summary-card { flex: 1; }
+      .inv-summary-dots { display: none !important; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export function InventoryScreen() {
   const { inventory, invHistory, openInvModal, openAdjustModal, can } = usePOS();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [historyOpen, setHistoryOpen] = useState(true);
+
+  /* ── swipe state ── */
+  const [activeCard, setActiveCard] = useState(0);
+  const touchRef = useRef<{ startX: number; startY: number; startTime: number; moved: boolean } | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   const filtered = inventory.filter(item => {
     const matchSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -32,23 +58,88 @@ export function InventoryScreen() {
     { label: 'Out of Stock', value: inventory.filter(i => invStatus(i.qty, i.min) === 'Out of Stock').length, color: '#dc2626', icon: <XCircle size={18} /> },
   ];
 
+  const cardCount = summaryData.length;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchRef.current = { startX: t.clientX, startY: t.clientY, startTime: Date.now(), moved: false };
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchRef.current || !trackRef.current) return;
+    const dx = e.touches[0].clientX - touchRef.current.startX;
+    const dy = e.touches[0].clientY - touchRef.current.startY;
+    // Only swipe horizontally
+    if (!touchRef.current.moved && Math.abs(dy) > Math.abs(dx)) { touchRef.current = null; return; }
+    touchRef.current.moved = true;
+    e.preventDefault();
+    const base = -(activeCard * 100);
+    const pct = (dx / trackRef.current.offsetWidth) * 100;
+    trackRef.current.style.transition = 'none';
+    trackRef.current.style.transform = `translateX(${base + pct}%)`;
+  }, [activeCard]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchRef.current || !trackRef.current) return;
+    const dx = e.changedTouches[0].clientX - touchRef.current.startX;
+    const dt = Date.now() - touchRef.current.startTime;
+    const w = trackRef.current.offsetWidth;
+    const velocity = Math.abs(dx) / dt; // px/ms
+    const threshold = velocity > 0.3 ? 20 : w * 0.25; // fast flick = low threshold
+    let next = activeCard;
+    if (dx < -threshold && activeCard < cardCount - 1) next = activeCard + 1;
+    else if (dx > threshold && activeCard > 0) next = activeCard - 1;
+    trackRef.current.style.transition = 'transform 0.32s cubic-bezier(.4,0,.2,1)';
+    trackRef.current.style.transform = `translateX(${-(next * 100)}%)`;
+    setActiveCard(next);
+    touchRef.current = null;
+  }, [activeCard, cardCount]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#f1f5f9', fontFamily: "'Inter', sans-serif" }}>
 
-      {/* Summary Cards */}
-      <div style={{ display: 'flex', gap: 10, padding: '12px 14px 10px', flexShrink: 0 }}>
-        {summaryData.map(d => (
-          <div key={d.label} style={{
-            flex: 1, background: 'white', borderRadius: 12, padding: '12px 14px',
-            display: 'flex', alignItems: 'center', gap: 10,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: `1.5px solid ${d.color}25`,
-          }}>
-            <div style={{ color: d.color }}>{d.icon}</div>
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: d.color, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1 }}>{d.value}</div>
-              <div style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 }}>{d.label}</div>
+      {/* Summary Cards – swipeable on mobile portrait */}
+      <div className="inv-summary-row" style={{ display: 'flex', gap: 10, padding: '12px 14px 10px', flexShrink: 0 }}>
+        <div
+          className="inv-summary-track"
+          ref={trackRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{ transform: `translateX(${-(activeCard * 100)}%)` }}
+        >
+          {summaryData.map(d => (
+            <div key={d.label} className="inv-summary-card" style={{
+              flex: 1, background: 'white', borderRadius: 12, padding: '12px 14px',
+              display: 'flex', alignItems: 'center', gap: 10,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: `1.5px solid ${d.color}25`,
+            }}>
+              <div style={{ color: d.color }}>{d.icon}</div>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: d.color, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1 }}>{d.value}</div>
+                <div style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 }}>{d.label}</div>
+              </div>
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
+      {/* Dot indicators (visible only on mobile portrait) */}
+      <div className="inv-summary-dots" style={{ display: 'none', justifyContent: 'center', gap: 7, padding: '0 14px 8px' }}>
+        {summaryData.map((d, i) => (
+          <button key={i} onClick={() => {
+            setActiveCard(i);
+            if (trackRef.current) {
+              trackRef.current.style.transition = 'transform 0.32s cubic-bezier(.4,0,.2,1)';
+              trackRef.current.style.transform = `translateX(${-(i * 100)}%)`;
+            }
+          }}
+            style={{
+              width: i === activeCard ? 18 : 7, height: 7, borderRadius: 10, border: 'none', padding: 0,
+              background: i === activeCard ? d.color : '#cbd5e1', cursor: 'pointer',
+              transition: 'all 0.25s ease',
+            }}
+            aria-label={`Go to ${d.label}`}
+          />
         ))}
       </div>
 
